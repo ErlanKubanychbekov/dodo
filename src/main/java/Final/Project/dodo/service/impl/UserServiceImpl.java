@@ -1,6 +1,8 @@
 package Final.Project.dodo.service.impl;
 
-import Final.Project.dodo.authservice.utils.JwtProvider;
+import Final.Project.dodo.utils.JwtProvider;
+import Final.Project.dodo.utils.ResourceBundelLanguage;
+import Final.Project.dodo.utils.language;
 import Final.Project.dodo.base.BaseServiceImpl;
 import Final.Project.dodo.dao.UserRep;
 import Final.Project.dodo.model.dto.UserDto;
@@ -13,20 +15,22 @@ import Final.Project.dodo.service.UserService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserServiceImpl extends BaseServiceImpl<User, UserRep, UserDto, UserMapper> implements UserService {
-    public UserServiceImpl(UserRep rep, UserMapper mapper, JwtProvider jwtProvider) {
+public class UserServiceImpl extends BaseServiceImpl<User, UserRep,
+        UserDto, UserMapper> implements UserService {
+    public UserServiceImpl(UserRep rep, UserMapper mapper,
+                           JwtProvider jwtProvider) {
         super(rep, mapper);
         this.jwtProvider = jwtProvider;
     }
     private final JwtProvider jwtProvider;
 
     @Override
-    public UserDto getUserByToken(String token) {
-        return findById(jwtProvider.validateToken(token));
+    public UserDto getUserByToken(String token, Integer lang) {
+        return findById(jwtProvider.validateToken(token, lang));
     }
 
     @Override
-    public UserDto create(UserCreateRequest request) {
+    public String create(UserCreateRequest request, Integer languageOrdinal) {
         UserDto dto = new UserDto();
         dto.setName(request.getName());
         dto.setEmail(request.getEmail());
@@ -34,7 +38,9 @@ public class UserServiceImpl extends BaseServiceImpl<User, UserRep, UserDto, Use
         dto.setDodoCoins(request.getDodoCoins());
         dto.setTempPass(request.getTempPass());
         dto.setSendDate(request.getSendDate());
-        return save(dto);
+        save(dto);
+        return ResourceBundelLanguage.periodMessage
+                (language.getLanguage(languageOrdinal),"createSuccessful");
 
 
     }

@@ -22,4 +22,10 @@ public class Size extends BaseEntity {
     String name;
     @Enumerated(EnumType.STRING)
     Status status;
+
+    @Override
+    protected void onCreate() {
+        super.onCreate();
+        status = Status.ACTIVE;
+    }
 }

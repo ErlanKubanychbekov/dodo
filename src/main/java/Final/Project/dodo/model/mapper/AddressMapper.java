@@ -7,5 +7,5 @@ import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 
 @Mapper(injectionStrategy = InjectionStrategy.CONSTRUCTOR,componentModel = "spring")
-public interface AddressMapper extends BaseMapper<Address, AddressDto> {
+public interface  AddressMapper extends BaseMapper<Address, AddressDto> {
 }

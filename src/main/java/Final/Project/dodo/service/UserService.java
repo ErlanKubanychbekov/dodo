@@ -10,7 +10,7 @@ import Final.Project.dodo.model.request.update.UserUpdateRequest;
 import Final.Project.dodo.model.response.UserResponse;
 
 public interface UserService extends BaseService<UserDto> {
-    UserDto create(UserCreateRequest request);
+    String create(UserCreateRequest request, Integer languageOrdinal);
 
 
     UserDto update(UserUpdateRequest request);
@@ -18,5 +18,5 @@ public interface UserService extends BaseService<UserDto> {
 
     Boolean delete(Long id);
     UserResponse getUserByEmail(String email);
-    UserDto getUserByToken(String token);
+    UserDto getUserByToken(String token, Integer lang);
 }

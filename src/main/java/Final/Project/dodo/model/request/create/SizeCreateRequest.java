@@ -12,5 +12,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SizeCreateRequest {
     String name;
-    Boolean active;
+
 }

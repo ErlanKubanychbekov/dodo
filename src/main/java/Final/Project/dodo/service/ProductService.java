@@ -9,10 +9,14 @@ import Final.Project.dodo.model.request.create.ProductCreateRequest;
 import Final.Project.dodo.model.request.update.CategoriesUpdateRequest;
 import Final.Project.dodo.model.request.update.ProductUpdateRequest;
 
+import java.math.BigDecimal;
+
 public interface ProductService extends BaseService<ProductDto> {
-    ProductDto create(ProductCreateRequest request);
+    String create(ProductCreateRequest request,Integer lang);
 
     ProductDto update(ProductUpdateRequest request);
 
     Boolean delete(Long id);
+
+
 }

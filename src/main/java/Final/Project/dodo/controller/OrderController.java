@@ -1,10 +1,10 @@
 package Final.Project.dodo.controller;
 
 
-import Final.Project.dodo.authservice.utils.JwtProvider;
+import Final.Project.dodo.utils.JwtProvider;
 import Final.Project.dodo.model.dto.OrderDto;
 import Final.Project.dodo.model.request.create.OrderCreateRequest;
-import Final.Project.dodo.model.request.update.OrderUpdateRequest;
+
 import Final.Project.dodo.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +21,12 @@ public class OrderController {
     private final JwtProvider jwtProvider;
 
     @PostMapping("save")
-    public ResponseEntity<?> save( @RequestHeader String  token, @RequestBody OrderCreateRequest request) {
-        Long userId = jwtProvider.validateToken(token);
+    public ResponseEntity<?> save( @RequestHeader String  token,
+                                   @RequestBody OrderCreateRequest request,
+                                   @RequestParam(required = false,defaultValue = "3") Integer languageOrdinal) {
+        Long userId = jwtProvider.validateToken(token, languageOrdinal);
         request.setUserId(userId);
-        return ResponseEntity.ok(service.create(request));
+        return ResponseEntity.ok(service.create(request,languageOrdinal));
     }
 
     @PostMapping("update")
@@ -47,10 +49,19 @@ public class OrderController {
         return ResponseEntity.ok(service.findById(id));
     }
     @GetMapping("orderHistory")
-    public ResponseEntity<?> getOrderHistory(@RequestHeader String token){
-        Long userId = jwtProvider.validateToken(token);
-        return ResponseEntity.ok(service.getOrderHistory(userId));
+    public ResponseEntity<?> getOrderHistory(
+            @RequestHeader String token,int limit, int offset,@RequestParam(required = false,defaultValue = "3") Integer lang){
+        Long userId = jwtProvider.validateToken(token,lang);
+        return ResponseEntity.ok(service.getOrderHistory(userId,limit,  offset));
 
+    }
+
+    @PostMapping("repeatOrder")
+    public  ResponseEntity<?> repeatOrder(@RequestHeader String token
+            ,@RequestParam Long orderId, @RequestParam(required = false, defaultValue = "3")
+                                              Integer languageOrdinal){
+        Long userId = jwtProvider.validateToken(token,languageOrdinal);
+        return ResponseEntity.ok(service.repeatOrder(orderId,userId));
     }
 
 }

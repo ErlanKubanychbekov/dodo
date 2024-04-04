@@ -9,6 +9,8 @@ import Final.Project.dodo.model.mapper.CategoriesMapper;
 import Final.Project.dodo.model.request.create.CategoriesCreateRequest;
 import Final.Project.dodo.model.request.update.CategoriesUpdateRequest;
 import Final.Project.dodo.service.CategoriesService;
+import Final.Project.dodo.utils.ResourceBundelLanguage;
+import Final.Project.dodo.utils.language;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,11 +22,12 @@ public class CategoriesServiceImpl extends BaseServiceImpl<Categories, Categorie
     }
 
     @Override
-    public CategoriesDto create(CategoriesCreateRequest request) {
+    public String create(CategoriesCreateRequest request,Integer lang) {
         CategoriesDto dto = new CategoriesDto();
         dto.setName(request.getName());
         dto.setDefinition(request.getDefinition());
-        return save(dto);
+         save(dto);
+        return ResourceBundelLanguage.periodMessage(language.getLanguage(lang),"createSuccessful");
     }
 
 

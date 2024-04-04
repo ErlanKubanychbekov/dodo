@@ -16,8 +16,10 @@ public class SizeController {
     private final SizeService service;
 
     @PostMapping
-    public ResponseEntity<?> create(SizeCreateRequest request){
-        return ResponseEntity.ok(service.create(request));
+    public ResponseEntity<?> create(@RequestBody SizeCreateRequest request,
+                                    @RequestParam(required = false,defaultValue = "3")
+                                    Integer lang){
+        return ResponseEntity.ok(service.create(request,lang));
     }
 
     @PutMapping

@@ -7,14 +7,16 @@ import Final.Project.dodo.model.request.auth.ValidateEmailReq;
 import java.util.Date;
 
 public interface AuthService {
-    String auth(AuthRequest request);
+    String auth(AuthRequest request, Integer langugeOrdinal);
 
-    String validate(ValidateEmailReq req);
-    Long validateToken(String token);
+    String validate(ValidateEmailReq req, Integer languageOrdinal);
+    Long validateToken(String token, Integer lang);
 
-    String generateTempPass();
 
-    Boolean checkTime(Date sendTime);
 
-    String getClaim(String token);
+
+
+    String getClaim(String token, Integer lang);
+
+
 }

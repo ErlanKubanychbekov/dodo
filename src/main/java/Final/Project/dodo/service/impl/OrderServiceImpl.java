@@ -1,10 +1,13 @@
 package Final.Project.dodo.service.impl;
 
+import Final.Project.dodo.utils.ResourceBundelLanguage;
+import Final.Project.dodo.utils.language;
 import Final.Project.dodo.base.BaseServiceImpl;
 import Final.Project.dodo.dao.OrderRep;
-import Final.Project.dodo.dao.projection.OrderProductProjection;
+import Final.Project.dodo.exception.EmptyListException;
 import Final.Project.dodo.model.dto.*;
 import Final.Project.dodo.model.entities.Order;
+import Final.Project.dodo.model.entities.OrderProduct;
 import Final.Project.dodo.model.enums.OrderStatus;
 import Final.Project.dodo.model.mapper.OrderMapper;
 import Final.Project.dodo.model.request.ProductOrderList;
@@ -21,72 +24,94 @@ import java.util.List;
 @Service
 public class OrderServiceImpl extends BaseServiceImpl<Order, OrderRep, OrderDto, OrderMapper> implements OrderService {
     public OrderServiceImpl(OrderRep rep, OrderMapper mapper, UserService userService,
-                            AddressService addressService, OrderProductService orderProductService, ProductSizeService productSizeService, ProductService productService) {
+                            AddressService addressService,
+                            OrderProductService orderProductService,
+                            ProductSizeService productSizeService) {
         super(rep, mapper);
         this.userService = userService;
         this.addressService = addressService;
         this.orderProductService = orderProductService;
         this.productSizeService = productSizeService;
-        this.productService = productService;
+
     }
+
     private final UserService userService;
     private final AddressService addressService;
     private final OrderProductService orderProductService;
-    private  final ProductSizeService productSizeService;
-    private final ProductService productService;
-
+    private final ProductSizeService productSizeService;
     @Override
-    public List<OrderDto> getByUserId(Long userId) {
-        return mapper.toDtos(rep.findByUserId(userId),context);
-    }
+    public String create(OrderCreateRequest request, Integer langugeOrdinal) {
+        if (request.getProductOrderLists().isEmpty()) {
+            throw new EmptyListException(ResourceBundelLanguage.
+                    periodMessage(language.getLanguage(langugeOrdinal),"selectproduct"));
+        }
 
-    @Override
-    public OrderDto create(OrderCreateRequest request) {
         int dodocoins;
-        BigDecimal totalPrice= BigDecimal.ZERO;
+        BigDecimal totalPrice = BigDecimal.ZERO;
         AddressDto addressDto = addressService.findById(request.getAddressId());
         UserDto userDto = userService.findById(request.getUserId());
 
-        OrderDto orderDto =new  OrderDto();
+        OrderDto orderDto = new OrderDto();
         orderDto.setOrderDate(request.getOrderDate());
         orderDto.setUser(userDto);
         orderDto.setAddress(addressDto);
         orderDto.setPaymentType(request.getPaymentType());
-        save(orderDto);
-
-        for (ProductOrderList item: request.getProductOrderLists()) {
-            OrderProductDto orderProductDto = new OrderProductDto();
-            orderProductDto.setProduct(productService.findById(item.getProductId()));
-            orderProductDto.setOrder(orderDto);
-            orderProductDto.setPrice(productSizeService.findById(item.getProductId()).getPrice());
-            totalPrice =  totalPrice.add(productSizeService.findById(item.getProductId()).getPrice());
 
 
-           orderProductService.save(orderProductDto);
+        for (ProductOrderList item : request.getProductOrderLists()) {
+            totalPrice = totalPrice.add(item.getPrice());
 
         }
-
 
         dodocoins = totalPrice.multiply(BigDecimal.valueOf(0.20)).intValue();
         orderDto.setDodoCoins(dodocoins);
         orderDto.setTotalPrice(totalPrice);
         orderDto.setOrderStatus(OrderStatus.CREATED);
-        orderDto=updated(orderDto);
+        save(orderDto);
 
+        for (ProductOrderList item : request.getProductOrderLists()) {
+            totalPrice = totalPrice.add(item.getPrice());
+            OrderProductDto orderProductDto = new OrderProductDto();
 
-        if(userDto.getDodoCoins() == null){
+            ProductSizeDto productSizeDto = productSizeService.findById(item.getProductSizeId());
+            orderProductDto.setProductSize(productSizeDto);
+            orderProductDto.setOrder(orderDto);
+            orderProductDto.setPrice(productSizeDto.getPrice());
+
+            orderProductService.save(orderProductDto);
+        }
+        if (userDto.getDodoCoins() == null) {
             userDto.setDodoCoins(dodocoins);
-        }else {
+        } else {
             userDto.setDodoCoins(dodocoins + userDto.getDodoCoins());
         }
 
         userService.updated(userDto);
 
-
-
-        return orderDto;
-
+        return ResourceBundelLanguage.periodMessage(language.getLanguage(langugeOrdinal),
+                "createSuccessful");
     }
+
+
+    @Override
+    public List<OrderDto> getByUserId(Long userId) {
+        return mapper.toDtos(rep.findByUserId(userId), context);
+    }
+
+    @Override
+    public void checkOrders() {
+        List<OrderDto> orderList = findNewOrders();
+        for (OrderDto dto : orderList) {
+            if (dto.getUpdateDate().plusMinutes(30).isEqual(dto.getOrderDate())
+                    || dto.getUpdateDate().plusMinutes(30).isBefore(dto.getOrderDate())) {
+                dto.setOrderStatus(OrderStatus.PREPARING);
+                update(dto);
+            }
+        }
+    }
+
+
+
 
     @Override
     public OrderDto updated(OrderDto request) {
@@ -102,6 +127,7 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, OrderRep, OrderDto,
         dto.setDodoCoins(request.getDodoCoins());
 
         return update(dto);
+
     }
 
     @Override
@@ -110,32 +136,70 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, OrderRep, OrderDto,
     }
 
     @Override
-    public List<OrderHistoryResponse> getOrderHistory(Long userId) {
+    public List<OrderHistoryResponse> getOrderHistory(Long userId, int limit, int offset) {
         List<OrderDto> orderDtos = getByUserId(userId);
         List<OrderHistoryResponse> historyResponse = new ArrayList<>();
-        BigDecimal totalPrice = BigDecimal.ZERO;
-        for(OrderDto dto: orderDtos) {
-            List<OrderProductProjection> productOrder = orderProductService.findAllByOrderId(dto.getId());
+
+        for (int i = offset; i < Math.min(orderDtos.size(), offset + limit); i++) {
+            OrderDto dto = orderDtos.get(i);
+            List<OrderProduct> productOrder = orderProductService.findAllByOrderId(dto.getId());
             OrderHistoryResponse response = new OrderHistoryResponse();
             List<ProductResponse> productResponseList = new ArrayList<>();
+            BigDecimal totalPrice = BigDecimal.ZERO;
 
             response.setId(dto.getId());
             response.setOrderDate(dto.getOrderDate());
             response.setAddressStreet(dto.getAddress().getStreet());
             response.setAddressStreetNum(dto.getAddress().getNum());
-            for (OrderProductProjection  productDto : productOrder ) {
+            for (OrderProduct productDto : productOrder) {
                 ProductResponse productResponse = new ProductResponse();
-                productResponse.setId(productDto.getId());
-                productResponse.setName(productDto.getName());
-                productResponse.setDescription(productDto.getDescription());
-                productResponse.setCategoriesName(productService.findById(productDto.getProductId()).getCategories().getName());
+                productResponse.setId(productDto.getProductSize().getId());
+                productResponse.setName(productDto.getProductSize().getProduct().getName());
+                productResponse.setDescription(productDto.getProductSize().getProduct().getDescription());
+                productResponse.setCategoriesName(productDto.getProductSize().getProduct().getCategories().getName());
+
                 productResponseList.add(productResponse);
+
+                totalPrice = totalPrice.add(productDto.getPrice());
             }
             response.setProductList(productResponseList);
-            response.setTotalPrice(totalPrice.add(dto.getTotalPrice()));
-            historyResponse.add(response);
+            response.setTotalPrice(totalPrice);
 
+            historyResponse.add(response);
         }
+
         return historyResponse;
     }
+
+    @Override
+    public OrderCreateRequest repeatOrder(Long orderId, Long userId) {
+        OrderDto orderDto = findById(orderId);
+        List<ProductOrderList> productOrderLists = new ArrayList<>();
+
+        OrderCreateRequest createRequest = new OrderCreateRequest();
+        createRequest.setUserId(userId);
+        createRequest.setOrderDate(orderDto.getOrderDate());
+        createRequest.setPaymentType(orderDto.getPaymentType());
+        createRequest.setAddressId(orderDto.getAddress().getId());
+
+        for (OrderProduct dto : orderProductService.findAllByOrderId(orderDto.getId())) {
+            ProductOrderList productOrderList = new ProductOrderList();
+            productOrderList.setProductSizeId(dto.getProductSize().getId());
+            productOrderList.setPrice(dto.getProductSize().getPrice());
+
+            productOrderLists.add(productOrderList);
+        }
+        createRequest.setProductOrderLists(productOrderLists);
+
+
+        return createRequest;
+
+
+    }
+
+    @Override
+    public List<OrderDto> findNewOrders() {
+        return mapper.toDtos(rep.findNewOrders(), context);
+    }
+
 }

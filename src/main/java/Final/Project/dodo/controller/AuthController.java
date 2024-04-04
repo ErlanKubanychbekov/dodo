@@ -18,23 +18,26 @@ public class AuthController {
 
 
     @PostMapping
-    ResponseEntity<?> auth(@RequestBody AuthRequest request ){
-        return ResponseEntity.ok(authService.auth(request));
+    ResponseEntity<?> auth(@RequestBody AuthRequest request ,
+                           @RequestParam(required = false,defaultValue = "3") Integer languageOrdinal ){
+        return ResponseEntity.ok(authService.auth(request, languageOrdinal));
     }
 
     @PostMapping ("/check")
-    ResponseEntity<?> validate(@RequestBody ValidateEmailReq emailReq){
-        return ResponseEntity.ok(authService.validate(emailReq));
+    ResponseEntity<?> validate(@RequestBody ValidateEmailReq emailReq,@RequestParam(required = false,defaultValue = "3")  Integer languageOrdinal){
+        return ResponseEntity.ok(authService.validate(emailReq,languageOrdinal));
     }
 
     @GetMapping ("/validateToken")
-    ResponseEntity<?> validateToken(String token){
-        return ResponseEntity.ok(authService.validateToken(token));
+    ResponseEntity<?> validateToken(@RequestHeader String token,
+                                    @RequestParam(required = false,defaultValue = "3") Integer lang){
+        return ResponseEntity.ok(authService.validateToken(token,lang));
     }
 
     @GetMapping ("/Claim")
-    ResponseEntity<?> getClaim(String token){
-        return ResponseEntity.ok(authService.getClaim(token));
+    ResponseEntity<?> getClaim(@RequestHeader String token,
+                               @RequestParam(required = false,defaultValue = "3") Integer lang){
+        return ResponseEntity.ok(authService.getClaim(token, lang));
     }
 
 

@@ -9,7 +9,11 @@ import Final.Project.dodo.model.request.create.ProductCreateRequest;
 import Final.Project.dodo.model.request.update.ProductUpdateRequest;
 import Final.Project.dodo.service.CategoriesService;
 import Final.Project.dodo.service.ProductService;
+import Final.Project.dodo.utils.ResourceBundelLanguage;
+import Final.Project.dodo.utils.language;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 public class ProductServiceImpl extends BaseServiceImpl<Product, ProductRep, ProductDto, ProductMapper> implements ProductService {
@@ -20,13 +24,14 @@ public class ProductServiceImpl extends BaseServiceImpl<Product, ProductRep, Pro
     private final CategoriesService categoriesService;
 
     @Override
-    public ProductDto create(ProductCreateRequest request) {
+    public String create(ProductCreateRequest request, Integer lang) {
         ProductDto dto = new ProductDto();
         dto.setName(request.getName());
         dto.setDescription(request.getDescription());
         dto.setLogo(request.getLogo());
         dto.setCategories(categoriesService.findById(request.getCategoryId()));
-        return save(dto);
+        save(dto);
+        return ResourceBundelLanguage.periodMessage(language.getLanguage(lang),"createSuccessful");
     }
 
 
@@ -45,4 +50,7 @@ public class ProductServiceImpl extends BaseServiceImpl<Product, ProductRep, Pro
     public Boolean delete(Long id) {
         return delete(findById(id));
     }
+
+
+
 }

@@ -33,4 +33,9 @@ public class ProductSize extends BaseEntity {
     @Enumerated(EnumType.STRING)
     Status status;
 
+    @Override
+    protected void onCreate() {
+        super.onCreate();
+        status=Status.ACTIVE;
+    }
 }

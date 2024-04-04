@@ -14,5 +14,5 @@ public class AddressCreateRequest {
     String street;
     String num;
     String comment;
-    Long userId;
+
 }

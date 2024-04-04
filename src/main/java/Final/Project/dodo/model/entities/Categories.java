@@ -25,4 +25,10 @@ public class Categories extends BaseEntity {
     String definition;
     @Enumerated(EnumType.STRING)
     Status status;
+
+    @Override
+    protected void onCreate() {
+        super.onCreate();
+        status = Status.ACTIVE;
+    }
 }

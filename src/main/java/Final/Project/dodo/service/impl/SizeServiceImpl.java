@@ -8,6 +8,8 @@ import Final.Project.dodo.model.mapper.SizeMapper;
 import Final.Project.dodo.model.request.create.SizeCreateRequest;
 import Final.Project.dodo.model.request.update.SizeUpdateRequest;
 import Final.Project.dodo.service.SizeService;
+import Final.Project.dodo.utils.ResourceBundelLanguage;
+import Final.Project.dodo.utils.language;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,11 +19,11 @@ public class SizeServiceImpl extends BaseServiceImpl<Size, SizeRep, SizeDto, Siz
     }
 
     @Override
-    public SizeDto create(SizeCreateRequest request) {
+    public String create(SizeCreateRequest request,Integer lang) {
         SizeDto dto = new SizeDto();
         dto.setName(request.getName());
-        dto.setActive(request.getActive());
-        return save(dto);
+        save(dto);
+        return ResourceBundelLanguage.periodMessage(language.getLanguage(lang),"createSuccessful");
     }
 
     @Override
@@ -29,7 +31,6 @@ public class SizeServiceImpl extends BaseServiceImpl<Size, SizeRep, SizeDto, Siz
         SizeDto dto = new SizeDto();
         dto.setId(request.getId());
         dto.setName(request.getName());
-        dto.setActive(request.getActive());
         return update(dto);
     }
 

@@ -22,14 +22,17 @@ public class User extends BaseEntity {
     Long id;
     @Column(name = "name")
     String name;
-    @Column(name = "email")
-    String email;
     @Column(name = "phone")
     String phone;
     @Column(name = "dodoCoins")
     Integer dodoCoins;
-    String tempPass;
-    Date sendDate;
+
     @Enumerated(EnumType.STRING)
     Status status;
+
+    @Override
+    protected void onCreate() {
+        super.onCreate();
+        status = Status.ACTIVE;
+    }
 }

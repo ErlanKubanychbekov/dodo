@@ -5,6 +5,6 @@ import lombok.Data;
 import java.math.BigDecimal;
 @Data
 public class ProductOrderList {
-    Long productId;
+    Long productSizeId;
     BigDecimal price;
 }

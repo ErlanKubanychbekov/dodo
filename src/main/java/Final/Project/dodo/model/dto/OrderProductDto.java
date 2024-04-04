@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 @ToString
 public class OrderProductDto extends BaseDto {
-    ProductDto product;
+    ProductSizeDto productSize;
     OrderDto order;
     BigDecimal price;
 }

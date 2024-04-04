@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/products")
@@ -16,8 +18,10 @@ public class ProductController {
     private final ProductService service;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody ProductCreateRequest request) {
-        return ResponseEntity.ok(service.create(request));
+    public ResponseEntity<?> create(
+            @RequestBody ProductCreateRequest request,
+            @RequestParam(required = false,defaultValue = "3") Integer lang) {
+        return ResponseEntity.ok(service.create(request,lang));
     }
 
     @PutMapping
@@ -37,4 +41,5 @@ public class ProductController {
     public ResponseEntity<?> delete(@PathVariable Long id) {
         return ResponseEntity.ok(service.delete(id));
     }
+
 }

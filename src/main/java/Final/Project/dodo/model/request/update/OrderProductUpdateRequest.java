@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderProductUpdateRequest {
     Long id;
-    Long productId;
+    Long productSizeId;
     OrderDto orderDto;
     BigDecimal price;
 }

@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/product-sizes")
@@ -16,8 +18,9 @@ public class ProductSizeController {
     private final ProductSizeService service;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody ProductSizeCreateRequest request) {
-        return ResponseEntity.ok(service.create(request));
+    public ResponseEntity<?> create(@RequestBody ProductSizeCreateRequest request,
+                                    @RequestParam(required = false,defaultValue = "3") Integer lang) {
+        return ResponseEntity.ok(service.create(request,lang));
     }
 
     @PutMapping
@@ -37,5 +40,13 @@ public class ProductSizeController {
     @GetMapping("getAll")
     public ResponseEntity<?> getAll(){
         return ResponseEntity.ok(service.findAll());
+    }
+    @GetMapping("filter")
+    public ResponseEntity<?> getProductByFilter(@RequestParam(required = false) Long sizeId,
+                                                @RequestParam(required = false) BigDecimal fromPrice,
+                                                @RequestParam(required = false) BigDecimal toPrice,
+                                                @RequestParam(required = false) String name,
+                                                @RequestParam(required = false) Long categoryId){
+        return ResponseEntity.ok(service.filter(sizeId,fromPrice, toPrice,name, categoryId));
     }
 }

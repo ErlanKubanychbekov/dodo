@@ -12,5 +12,5 @@ import lombok.experimental.FieldDefaults;
 @ToString
 public class SizeDto extends BaseDto {
     String name;
-    Boolean active;
+
 }

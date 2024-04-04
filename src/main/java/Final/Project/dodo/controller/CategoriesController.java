@@ -16,8 +16,9 @@ public class CategoriesController {
     private final CategoriesService service;
 
     @PostMapping("save")
-    public ResponseEntity<?> save(@RequestBody CategoriesCreateRequest request) {
-        return ResponseEntity.ok(service.create(request));
+    public ResponseEntity<?> save(@RequestBody CategoriesCreateRequest request,
+                                  @RequestParam(required = false,defaultValue = "3") Integer lang) {
+        return ResponseEntity.ok(service.create(request,lang));
     }
 
     @PostMapping("update")

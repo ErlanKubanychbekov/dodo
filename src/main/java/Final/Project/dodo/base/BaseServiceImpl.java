@@ -33,7 +33,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity,
 
     @Override
     public D findById(Long id) {
-        return mapper.toDto(rep.findById(id).orElseThrow(()->new NotFoundException("Not found with id"+id)),context);
+        return mapper.toDto(rep.findById(id).orElseThrow(()->new NotFoundException("Not found with id " +id)),context);
     }
 
     @Override

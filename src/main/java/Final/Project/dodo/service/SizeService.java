@@ -9,7 +9,7 @@ import Final.Project.dodo.model.request.update.CategoriesUpdateRequest;
 import Final.Project.dodo.model.request.update.SizeUpdateRequest;
 
 public interface SizeService extends BaseService<SizeDto> {
-    SizeDto create(SizeCreateRequest request);
+    String create(SizeCreateRequest request,Integer lang);
 
 
     SizeDto update(SizeUpdateRequest request);

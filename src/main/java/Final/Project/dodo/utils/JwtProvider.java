@@ -1,4 +1,4 @@
-package Final.Project.dodo.authservice.utils;
+package Final.Project.dodo.utils;
 
 
 import io.jsonwebtoken.*;
@@ -41,7 +41,7 @@ public class JwtProvider {
 
 
 
-    public Long validateToken(String token) {
+    public Long validateToken(String token, Integer lang) {
 
         try {
 
@@ -53,21 +53,26 @@ public class JwtProvider {
                 return Long.parseLong(String.valueOf(claims.get("userId")));
 
             } else {
-                throw new RuntimeException("Токен пустой");
+                throw new JwtException(ResourceBundelLanguage.periodMessage
+                        (language.getLanguage(lang),"tokenIsEmpty"));
             }
         } catch (ExpiredJwtException e) {
-            throw new RuntimeException("Срок действия токена истек. Просьба авторизоваться");
+            throw new JwtException(ResourceBundelLanguage.periodMessage
+                    (language.getLanguage(lang),"expiredToken"));
         } catch (MalformedJwtException e) {
-            throw new RuntimeException("Токен взломан");
+            throw new JwtException(ResourceBundelLanguage.periodMessage
+                    (language.getLanguage(lang),"hackedToken"));
         } catch (ResponseStatusException e) {
-            throw new RuntimeException("Токен пустой");
+            throw new JwtException(ResourceBundelLanguage.periodMessage
+                    (language.getLanguage(lang),"tokenIsEmpty"));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Токен не прошел валидацию");
+            throw new JwtException(ResourceBundelLanguage.periodMessage
+                    (language.getLanguage(lang),"notValidatedToken"));
         }
     }
 
-    public String getClaim(String token) {
+    public String getClaim(String token, Integer lang) {
         try {
 
             int i = token.lastIndexOf('.');
@@ -80,16 +85,22 @@ public class JwtProvider {
             if (claims != null) {
                 return String.valueOf(claims.get("claim"));
             } else {
-                throw new RuntimeException("Токен пустой");
+                throw new JwtException(ResourceBundelLanguage.periodMessage
+                        (language.getLanguage(lang),"tokenIsEmpty"));
             }
         } catch (ExpiredJwtException e) {
-            throw new RuntimeException("Срок действия токена истек. Просьба авторизоваться");
+            throw new JwtException(ResourceBundelLanguage.periodMessage
+                    (language.getLanguage(lang),"expiredToken"));
         } catch (MalformedJwtException e) {
-            throw new RuntimeException("Токен взломан");
+            throw new JwtException(ResourceBundelLanguage.periodMessage
+                    (language.getLanguage(lang),"hackedToken"));
         } catch (ResponseStatusException e) {
-            throw new RuntimeException("Токен пустой");
+            throw new JwtException(ResourceBundelLanguage.periodMessage
+                    (language.getLanguage(lang),"tokenIsEmpty"));
         } catch (Exception e) {
-            throw new RuntimeException("Токен не прошел валидацию");
+            e.printStackTrace();
+            throw new JwtException(ResourceBundelLanguage.periodMessage
+                    (language.getLanguage(lang),"notValidatedToken"));
         }
     }
 }
