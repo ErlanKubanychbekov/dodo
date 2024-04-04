@@ -11,6 +11,7 @@ import Final.Project.dodo.service.AddressService;
 import Final.Project.dodo.service.UserService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Service
@@ -41,7 +42,7 @@ public class AddressServiceImpl extends BaseServiceImpl<Address, AddressRep, Add
         dto.setStreet(request.getStreet());
         dto.setNum(request.getNum());
         dto.setComment(request.getComment());
-        dto.setUpdateDate(new Date());
+        dto.setUpdateDate(LocalDateTime.now());
         dto.setUser(userService.findById(request.getUserId()));
         return update(dto);
 

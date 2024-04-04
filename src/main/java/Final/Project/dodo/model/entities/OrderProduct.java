@@ -22,6 +22,7 @@ public class OrderProduct extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     Long id;
     @ManyToOne
+    @JoinColumn(name = "product_id")
     Product product;
     @ManyToOne
     @JoinColumn(name = "order_id")

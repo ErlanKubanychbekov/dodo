@@ -55,7 +55,7 @@ public class OrderProductServiceImpl extends BaseServiceImpl<OrderProduct, Order
     }
 
     @Override
-    public List<OrderProductProjection> findAllByOrderId(Long id) {
+    public List<OrderProduct> findAllByOrderId(Long id) {
         return rep.findAllByOrderId(id);
     }
 }

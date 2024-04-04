@@ -12,5 +12,5 @@ import java.util.List;
 @Repository
 public interface OrderProductRep extends BaseRep<OrderProduct> {
     @Query(value = "select * from tb_order_product o where order_id =:id",nativeQuery = true)
-    List<OrderProductProjection> findAllByOrderId(Long id);
+    List<OrderProduct> findAllByOrderId(Long id);
 }

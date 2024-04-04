@@ -3,25 +3,35 @@ package Final.Project.dodo.service.impl;
 import Final.Project.dodo.base.BaseServiceImpl;
 import Final.Project.dodo.dao.OrderRep;
 import Final.Project.dodo.dao.projection.OrderProductProjection;
+import Final.Project.dodo.exception.NotFoundException;
 import Final.Project.dodo.model.dto.*;
 import Final.Project.dodo.model.entities.Order;
+import Final.Project.dodo.model.entities.OrderProduct;
 import Final.Project.dodo.model.enums.OrderStatus;
 import Final.Project.dodo.model.mapper.OrderMapper;
 import Final.Project.dodo.model.request.ProductOrderList;
+import Final.Project.dodo.model.request.RepeatOrderRequest;
 import Final.Project.dodo.model.request.create.OrderCreateRequest;
 import Final.Project.dodo.model.response.OrderHistoryResponse;
 import Final.Project.dodo.model.response.ProductResponse;
 import Final.Project.dodo.service.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class OrderServiceImpl extends BaseServiceImpl<Order, OrderRep, OrderDto, OrderMapper> implements OrderService {
     public OrderServiceImpl(OrderRep rep, OrderMapper mapper, UserService userService,
-                            AddressService addressService, OrderProductService orderProductService, ProductSizeService productSizeService, ProductService productService) {
+                            AddressService addressService,
+                            OrderProductService orderProductService,
+                            ProductSizeService productSizeService, ProductService productService) {
         super(rep, mapper);
         this.userService = userService;
         this.addressService = addressService;
@@ -42,6 +52,10 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, OrderRep, OrderDto,
 
     @Override
     public OrderDto create(OrderCreateRequest request) {
+        if (request.getProductOrderLists().isEmpty()){
+            throw new RuntimeException("Select product");
+        }
+
         int dodocoins;
         BigDecimal totalPrice= BigDecimal.ZERO;
         AddressDto addressDto = addressService.findById(request.getAddressId());
@@ -56,6 +70,7 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, OrderRep, OrderDto,
 
         for (ProductOrderList item: request.getProductOrderLists()) {
             OrderProductDto orderProductDto = new OrderProductDto();
+
             orderProductDto.setProduct(productService.findById(item.getProductId()));
             orderProductDto.setOrder(orderDto);
             orderProductDto.setPrice(productSizeService.findById(item.getProductId()).getPrice());
@@ -110,32 +125,69 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, OrderRep, OrderDto,
     }
 
     @Override
-    public List<OrderHistoryResponse> getOrderHistory(Long userId) {
+    public List<OrderHistoryResponse> getOrderHistory(Long userId, int limit, int offset) {
         List<OrderDto> orderDtos = getByUserId(userId);
         List<OrderHistoryResponse> historyResponse = new ArrayList<>();
-        BigDecimal totalPrice = BigDecimal.ZERO;
-        for(OrderDto dto: orderDtos) {
-            List<OrderProductProjection> productOrder = orderProductService.findAllByOrderId(dto.getId());
+
+        for (int i = offset; i < Math.min(orderDtos.size(), offset + limit); i++) {
+            OrderDto dto = orderDtos.get(i);
+            List<OrderProduct> productOrder = orderProductService.findAllByOrderId(dto.getId());
             OrderHistoryResponse response = new OrderHistoryResponse();
             List<ProductResponse> productResponseList = new ArrayList<>();
+            BigDecimal totalPrice = BigDecimal.ZERO;
 
             response.setId(dto.getId());
             response.setOrderDate(dto.getOrderDate());
             response.setAddressStreet(dto.getAddress().getStreet());
             response.setAddressStreetNum(dto.getAddress().getNum());
-            for (OrderProductProjection  productDto : productOrder ) {
+            for (OrderProduct productDto : productOrder) {
                 ProductResponse productResponse = new ProductResponse();
-                productResponse.setId(productDto.getId());
-                productResponse.setName(productDto.getName());
-                productResponse.setDescription(productDto.getDescription());
-                productResponse.setCategoriesName(productService.findById(productDto.getProductId()).getCategories().getName());
+                productResponse.setId(productDto.getProduct().getId());
+                productResponse.setName(productDto.getProduct().getName());
+                productResponse.setDescription(productDto.getProduct().getDescription());
+                productResponse.setCategoriesName(productDto.getProduct().getCategories().getName());
+
                 productResponseList.add(productResponse);
+
+                totalPrice = totalPrice.add(productDto.getPrice());
             }
             response.setProductList(productResponseList);
-            response.setTotalPrice(totalPrice.add(dto.getTotalPrice()));
-            historyResponse.add(response);
+            response.setTotalPrice(totalPrice);
 
+            historyResponse.add(response);
         }
+
         return historyResponse;
+    }
+
+    @Override
+    public OrderCreateRequest repeatOrder(Long orderId, Long userId) {
+        OrderDto orderDto = findById(orderId);
+        List<ProductOrderList> productOrderLists = new ArrayList<>();
+
+        OrderCreateRequest createRequest = new OrderCreateRequest();
+        createRequest.setUserId(userId);
+        createRequest.setOrderDate(orderDto.getOrderDate());
+        createRequest.setPaymentType(orderDto.getPaymentType());
+        createRequest.setAddressId(orderDto.getAddress().getId());
+
+        for (OrderProduct dto : orderProductService.findAllByOrderId(orderDto.getId())){
+            ProductOrderList productOrderList = new ProductOrderList();
+            productOrderList.setProductId(dto.getProduct().getId());
+            productOrderList.setPrice(dto.getPrice());
+            productOrderLists.add(productOrderList);
+        }
+        createRequest.setProductOrderLists(productOrderLists);
+
+
+
+        return createRequest;
+
+
+    }
+
+    @Override
+    public List<OrderDto> findNewOrders() {
+        return rep.findNewOrders();
     }
 }

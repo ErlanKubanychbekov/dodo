@@ -32,4 +32,5 @@ public class User extends BaseEntity {
     Date sendDate;
     @Enumerated(EnumType.STRING)
     Status status;
+
 }

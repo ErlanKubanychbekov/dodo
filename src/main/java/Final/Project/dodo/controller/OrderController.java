@@ -3,8 +3,9 @@ package Final.Project.dodo.controller;
 
 import Final.Project.dodo.authservice.utils.JwtProvider;
 import Final.Project.dodo.model.dto.OrderDto;
+import Final.Project.dodo.model.request.RepeatOrderRequest;
 import Final.Project.dodo.model.request.create.OrderCreateRequest;
-import Final.Project.dodo.model.request.update.OrderUpdateRequest;
+
 import Final.Project.dodo.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -47,10 +48,16 @@ public class OrderController {
         return ResponseEntity.ok(service.findById(id));
     }
     @GetMapping("orderHistory")
-    public ResponseEntity<?> getOrderHistory(@RequestHeader String token){
+    public ResponseEntity<?> getOrderHistory(@RequestHeader String token,int limit, int offset){
         Long userId = jwtProvider.validateToken(token);
-        return ResponseEntity.ok(service.getOrderHistory(userId));
+        return ResponseEntity.ok(service.getOrderHistory(userId,limit,  offset));
 
+    }
+
+    @PostMapping("repeatOrder")
+    public  ResponseEntity<?> repeatOrder(@RequestHeader String token ,@RequestParam Long orderId){
+        Long userId = jwtProvider.validateToken(token);
+        return ResponseEntity.ok(service.repeatOrder(orderId,userId));
     }
 
 }
